@@ -5,15 +5,34 @@
 
 #include <iostream>
 #include "cdk.h"
+#include <fstream>
+#include <iomanip>
+#include <stdint.h>
 
-
-#define MATRIX_WIDTH 4
-#define MATRIX_HEIGHT 3
-#define BOX_WIDTH 15
-#define MATRIX_NAME_STRING "Test Matrix"
+#define MATRIX_WIDTH 3
+#define MATRIX_HEIGHT 5
+#define BOX_WIDTH 18
+#define MATRIX_NAME_STRING "Binary File Contents"
 
 using namespace std;
 
+class BinaryFileHeader
+{
+ public:
+
+  uint32_t magicNumber; /* Should be 0xFEEDFACE */
+  uint32_t versionNumber;
+  uint64_t numRecords;
+};
+
+const int maxRecordStringLength = 25;
+class BinaryFileRecord
+{
+ public:
+
+  uint8_t strLength;
+  char stringBuffer[maxRecordStringLength];
+};
 
 int main()
 {
@@ -30,10 +49,10 @@ int main()
   // values you choose to set for MATRIX_WIDTH and MATRIX_HEIGHT
   // above.
 
-  const char 		*rowTitles[] = {"R0", "R1", "R2", "R3", "R4", "R5"};
-  const char 		*columnTitles[] = {"C0", "C1", "C2", "C3", "C4", "C5"};
-  int		boxWidths[] = {BOX_WIDTH, BOX_WIDTH, BOX_WIDTH, BOX_WIDTH, BOX_WIDTH, BOX_WIDTH};
-  int		boxTypes[] = {vMIXED, vMIXED, vMIXED, vMIXED,  vMIXED,  vMIXED};
+  const char 		*rowTitles[] = {"0", "a", "b", "c", "d", "e"};
+  const char 		*columnTitles[] = {"0", "a", "b", "c"};
+  int		boxWidths[] = {BOX_WIDTH, BOX_WIDTH, BOX_WIDTH, BOX_WIDTH};
+  int		boxTypes[] = {vMIXED, vMIXED, vMIXED, vMIXED};
 
   /*
    * Initialize the Cdk screen.
@@ -65,7 +84,31 @@ int main()
   /*
    * Dipslay a message
    */
-  setCDKMatrixCell(myMatrix, 2, 2, "Test Message");
+
+  BinaryFileHeader *myHeader = new BinaryFileHeader();
+  BinaryFileRecord *myRecord = new BinaryFileRecord();
+  ifstream binInfile ("cs3377.bin", ios::in | ios::binary);
+  char str[256];
+
+  binInfile.read((char *) myHeader, sizeof(BinaryFileHeader));
+
+  sprintf(str, "Magic: 0x%04X", myHeader->magicNumber);
+  setCDKMatrixCell(myMatrix, 1, 1, str);
+  sprintf(str, "Version: %d", myHeader->versionNumber);
+  setCDKMatrixCell(myMatrix, 1, 2, str);
+  sprintf(str, "NumRecords: %lu", myHeader->numRecords);
+  setCDKMatrixCell(myMatrix, 1, 3, str);
+
+  for(int i = 2; i<=MATRIX_HEIGHT; i++)
+    {
+      binInfile.read((char *) myRecord, sizeof(BinaryFileRecord));
+
+      sprintf(str, "strlen: %d", myRecord->strLength);
+      setCDKMatrixCell(myMatrix, i, 1, str);
+      sprintf(str, myRecord->stringBuffer);
+      setCDKMatrixCell(myMatrix, i, 2, str);
+    }
+
   drawCDKMatrix(myMatrix, true);    /* required  */
 
   /* So we can see results, pause until a key is pressed. */

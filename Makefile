@@ -8,17 +8,17 @@
 # Set up info for C++ implicit rule
 CXX = g++
 CXXFLAGS = -Wall
-CPPFLAGS = -I /scratch/perkins/include
+CPPFLAGS = -I/scratch/perkins/include
 
 #
 # Set up any Linker Flags
-LDFLAGS = -L /scratch/perkins/lib
+LDFLAGS = -L/scratch/perkins/lib
 
 LDLIBS = -lcdk -lcurses
 
 #
 # We choose the project name.  This is used in building the file name for the backup target
-PROJECTNAME = Program5
+PROJECTNAME = Program6
 
 #
 # We choose the source files to include and name the output
@@ -51,7 +51,7 @@ Makefile: $(SRCS:.cc=.d)
 
 #  This is a rule to link the files.  Pretty standard
 $(EXEC): $(OBJS)
-	$(CXX) -static -o $(EXEC) $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(CXX) -o $(EXEC) $(OBJS) $(LDFLAGS) $(LDLIBS)
 
 
 # Backup Target
