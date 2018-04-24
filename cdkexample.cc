@@ -2,6 +2,15 @@
 //kst150030@utdallas.edu
 //CS3377.501
 //
+//Uses binary file I/O techniques to open a binary file called cs3377.bin.
+//From the binary file, read/display the header record and then read/display the data records.
+//The header record and data records will be displayed in a CDK window.
+//The CDK window is a 3 wide by 5 high display matrix. 
+//First row of the table will display the three fields found in the header record
+////The three fields contain the magic number, the version, and the number of records.
+//The rest of the rows will display the two fields of the first 4 data records in the file (or the total number of data records if less than 4).
+////These two fields contain the string length and the string.
+//After display, program waits for the user types a character on the keyboard. This will exit the program.
 
 #include <iostream>
 #include "cdk.h"
@@ -11,20 +20,22 @@
 
 #define MATRIX_WIDTH 3
 #define MATRIX_HEIGHT 5
-#define BOX_WIDTH 18
+#define BOX_WIDTH 25
 #define MATRIX_NAME_STRING "Binary File Contents"
 
 using namespace std;
 
+//For the header record in the binary file
 class BinaryFileHeader
 {
  public:
 
-  uint32_t magicNumber; /* Should be 0xFEEDFACE */
+  uint32_t magicNumber;
   uint32_t versionNumber;
   uint64_t numRecords;
 };
 
+//For the data record in the binary file
 const int maxRecordStringLength = 25;
 class BinaryFileRecord
 {
@@ -33,6 +44,7 @@ class BinaryFileRecord
   uint8_t strLength;
   char stringBuffer[maxRecordStringLength];
 };
+
 
 int main()
 {
@@ -82,14 +94,14 @@ int main()
   drawCDKMatrix(myMatrix, true);
 
   /*
-   * Dipslay a message
+   * Display a message
    */
 
-  BinaryFileHeader *myHeader = new BinaryFileHeader();
-  BinaryFileRecord *myRecord = new BinaryFileRecord();
   ifstream binInfile ("cs3377.bin", ios::in | ios::binary);
-  char str[256];
-
+  char str[1024];
+ 
+  //Display the header record in the first row 
+  BinaryFileHeader *myHeader = new BinaryFileHeader();
   binInfile.read((char *) myHeader, sizeof(BinaryFileHeader));
 
   sprintf(str, "Magic: 0x%04X", myHeader->magicNumber);
@@ -99,15 +111,20 @@ int main()
   sprintf(str, "NumRecords: %lu", myHeader->numRecords);
   setCDKMatrixCell(myMatrix, 1, 3, str);
 
-  for(int i = 2; i<=MATRIX_HEIGHT; i++)
+  //Display the first 4 data records or the total number of data records if less than 4
+  BinaryFileRecord *myRecord = new BinaryFileRecord();
+  int rowCount = 2;
+  while(binInfile.read((char *) myRecord, sizeof(BinaryFileRecord)) && rowCount <= MATRIX_HEIGHT )
     {
-      binInfile.read((char *) myRecord, sizeof(BinaryFileRecord));
-
       sprintf(str, "strlen: %d", myRecord->strLength);
-      setCDKMatrixCell(myMatrix, i, 1, str);
+      setCDKMatrixCell(myMatrix, rowCount, 1, str);
       sprintf(str, myRecord->stringBuffer);
-      setCDKMatrixCell(myMatrix, i, 2, str);
+      setCDKMatrixCell(myMatrix, rowCount, 2, str);
+
+      rowCount++;
     }
+
+  binInfile.close();
 
   drawCDKMatrix(myMatrix, true);    /* required  */
 

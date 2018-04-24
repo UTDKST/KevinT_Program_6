@@ -2,7 +2,7 @@
 #kst150030@utdallas.edu
 #CS3377.501
 #
-#The Makefile that compiles the files and create an executable for Program 6
+#The Makefile that compiles the files and creates an executable for Program 6
 
 #
 # Set up info for C++ implicit rule
